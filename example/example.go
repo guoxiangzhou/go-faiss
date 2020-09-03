@@ -1,5 +1,6 @@
 package main
 
+import "C"
 import (
 	"fmt"
 
@@ -20,12 +21,21 @@ func main() {
 
 	ids := faiss.GenIDs(datasize)
 
-	err := faiss.InsertVectors(v, i, dimension, ids)
+	err := faiss.InsertVectors(v, i, datasize, ids)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	v2 := faiss.GenVectors(10, dimension)
+	fmt.Println("----------", faiss.GetTotal(i))
+
+	err = faiss.InsertVectors(v, i, datasize, ids)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("xxxxxxxxxxx", faiss.GetTotal(i))
+
+	v2 := faiss.GenVectors(10, datasize)
 	resIDs := make([]int32, 10*1000*100)
 	resDistances := make([]float32, 10*1000*100)
 	res := faiss.SearchVectors(v2, i, 1000, 10, resIDs, resDistances)

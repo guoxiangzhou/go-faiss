@@ -27,7 +27,7 @@ FaissIndex* CreateIndex(int dimension, const char* description, FaissMetricType 
   return index;
 }
 
-void Insert(float* vectors, FaissIndex* index, int num, long* ids) {
+void Insert(FaissIndex* index, float* vectors,int num, long* ids) {
   printf("Start insert \n");
   FAISS_TRY(faiss_Index_add_with_ids(index, num, vectors, ids));
   //  printf("%d", faiss_Index_add(index,num,vectors));
@@ -35,7 +35,12 @@ void Insert(float* vectors, FaissIndex* index, int num, long* ids) {
   return;
 }
 
-void Search(float* vectors, FaissIndex* index, int nq, int topk, long* ids, float* distances) {
+void Search(FaissIndex* index, float* vectors, int nq, int topk, long* ids, float* distances) {
   printf("Start search");
   FAISS_TRY(faiss_Index_search(index, nq, vectors, topk, distances, ids));
+}
+
+int GetTotal(FaissIndex* index) {
+  printf("Start GetTotal");
+  return faiss_Index_ntotal(index);
 }

@@ -48,13 +48,13 @@ func GenIDs(dataSize int) []int32 {
 	return ids
 }
 func InsertVectors(v Vectors, index *C.FaissIndex, dimension int, ids []int32) error {
-	C.Insert((*C.float)(unsafe.Pointer(&v[0])), index, C.int(dimension), (*C.long)(unsafe.Pointer(&ids[0])))
+	C.Insert(index, (*C.float)(unsafe.Pointer(&v[0])), C.int(dimension), (*C.long)(unsafe.Pointer(&ids[0])))
 	return nil
 }
 
 func SearchVectors(v Vectors, index *C.FaissIndex, nq int, topk int, resIDs []int32, resDistances []float32) []Result {
 	res := []Result{}
-	C.Search((*C.float)(unsafe.Pointer(&v[0])), index, C.int(nq), C.int(topk),
+	C.Search(index, (*C.float)(unsafe.Pointer(&v[0])), C.int(nq), C.int(topk),
 		(*C.long)(unsafe.Pointer(&resIDs[0])), (*C.float)(unsafe.Pointer(&resDistances[0])))
 	for i := 0; i < topk; i++ {
 		res = append(res, Result{
@@ -63,4 +63,8 @@ func SearchVectors(v Vectors, index *C.FaissIndex, nq int, topk int, resIDs []in
 		})
 	}
 	return res
+}
+
+func GetTotal(index *C.FaissIndex) int {
+	return int(C.GetTotal(index))
 }

@@ -42,3 +42,5 @@ In example directory, you can find example.go
 ```
     go test
 ```
+## linux
+need set $LD_LIBRARY_PATH=path/to/libfaiss_c.so
