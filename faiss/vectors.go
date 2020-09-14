@@ -1,16 +1,9 @@
 package faiss
 
 //#cgo CFLAGS: -I./include
-//#cgo LDFLAGS: -L/usr/local/lib -lfaiss_c
+//#cgo LDFLAGS: -lfaiss_c
 //
 //#include "faiss_cgo.h"
-//#include "error_c.h"
-//#include "index_io_c.h"
-//#include "index_factory_c.h"
-//#include "Index_c.h"
-//#include "IndexFlat_c.h"
-//#include "AutoTune_c.h"
-//#include "clone_index_c.h"
 import "C"
 
 import (
@@ -21,7 +14,7 @@ import (
 
 type Result struct {
 	Distance float32
-	ID       int32
+	ID       int64
 }
 
 type Vectors []float32
@@ -39,20 +32,49 @@ func GenVectors(dataSize int, dimension int) Vectors {
 	return vectors
 }
 
-func GenIDs(dataSize int) []int32 {
-	rand.Seed(time.Now().UnixNano())
-	ids := make([]int32, dataSize)
+func GenIDs(dataSize int) []int64 {
+	//rand.Seed(time.Now().UnixNano())
+	ids := make([]int64, dataSize)
 	for i := 0; i < dataSize; i++ {
-		ids[i] = rand.Int31()
+		ids[i] = int64(i) + 100 //rand.Int31()
 	}
 	return ids
 }
-func InsertVectors(v Vectors, index *C.FaissIndex, dimension int, ids []int32) error {
-	C.Insert(index, (*C.float)(unsafe.Pointer(&v[0])), C.int(dimension), (*C.long)(unsafe.Pointer(&ids[0])))
+
+type IndexParam struct {
+	Dimension   int
+	Description string
+	MetricType  string
+}
+
+type Index struct {
+	Index *C.FaissIndex
+}
+
+func (i *Index) Create(param *IndexParam) {
+	var metricType C.FaissMetricType
+	if param.MetricType == "L2" {
+		metricType = C.METRIC_L2
+	}
+	i.Index = C.CreateIndex(C.int(param.Dimension), C.CString(param.Description), metricType)
+}
+
+func InsertVectorsWithID(v Vectors, index *C.FaissIndex, dimension int, ids []int64) error {
+	C.InsertWithID(index, (*C.float)(unsafe.Pointer(&v[0])), C.int(dimension), (*C.long)(unsafe.Pointer(&ids[0])))
 	return nil
 }
 
-func SearchVectors(v Vectors, index *C.FaissIndex, nq int, topk int, resIDs []int32, resDistances []float32) []Result {
+func InsertVectors(v Vectors, index *C.FaissIndex, dimension int) error {
+	C.Insert(index, (*C.float)(unsafe.Pointer(&v[0])), C.int(dimension))
+	return nil
+}
+
+func Train(v Vectors, index *C.FaissIndex, dimension int) error {
+	C.Train(index, (*C.float)(unsafe.Pointer(&v[0])), C.int(dimension))
+	return nil
+}
+
+func SearchVectors(v Vectors, index *C.FaissIndex, nq int, topk int, resIDs []int64, resDistances []float32) []Result {
 	res := []Result{}
 	C.Search(index, (*C.float)(unsafe.Pointer(&v[0])), C.int(nq), C.int(topk),
 		(*C.long)(unsafe.Pointer(&resIDs[0])), (*C.float)(unsafe.Pointer(&resDistances[0])))

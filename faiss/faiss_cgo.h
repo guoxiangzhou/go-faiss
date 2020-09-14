@@ -8,7 +8,11 @@
 
 FaissIndex* CreateIndex(int dimension, const char* description, FaissMetricType metric_type);
 
-void Insert(FaissIndex* index, float* vectors, int num, long* ids);
+void InsertWithID(FaissIndex* index, float* vectors, int num, long* ids);
+
+void Insert(FaissIndex* index, float* vectors, int num);
+
+void Train(FaissIndex* index, float* vectors, int num);
 
 void Search(FaissIndex* index, float* vectors, int nq, int topk, long* ids, float* distances);
 
